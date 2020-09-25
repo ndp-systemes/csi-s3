@@ -24,6 +24,7 @@ type s3Client struct {
 type bucket struct {
 	Name          string
 	Mounter       string
+	MounterArgs   []string
 	FSPath        string
 	CapacityBytes int64
 }

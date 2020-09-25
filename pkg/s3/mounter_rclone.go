@@ -12,6 +12,7 @@ type rcloneMounter struct {
 	region          string
 	accessKeyID     string
 	secretAccessKey string
+	args            []string
 }
 
 const (
@@ -25,6 +26,7 @@ func newRcloneMounter(b *bucket, cfg *Config) (Mounter, error) {
 		region:          cfg.Region,
 		accessKeyID:     cfg.AccessKeyID,
 		secretAccessKey: cfg.SecretAccessKey,
+		args:            b.MounterArgs,
 	}, nil
 }
 
@@ -47,9 +49,8 @@ func (rclone *rcloneMounter) Mount(source string, target string) error {
 		fmt.Sprintf("--s3-region=%s", rclone.region),
 		fmt.Sprintf("--s3-endpoint=%s", rclone.url),
 		"--allow-other",
-		// TODO: make this configurable
-		"--vfs-cache-mode=writes",
 	}
+	args = append(args, rclone.args...)
 	os.Setenv("AWS_ACCESS_KEY_ID", rclone.accessKeyID)
 	os.Setenv("AWS_SECRET_ACCESS_KEY", rclone.secretAccessKey)
 	return fuseMount(target, rcloneCmd, args)

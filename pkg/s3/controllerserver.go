@@ -19,6 +19,7 @@ package s3
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -84,11 +85,17 @@ func (cs *controllerServer) CreateVolume(ctx context.Context, req *csi.CreateVol
 			return nil, fmt.Errorf("failed to create prefix %s: %v", fsPrefix, err)
 		}
 	}
+	var mounterArgs []string
+	err = json.Unmarshal([]byte(params[mounterArgsKey]), &mounterArgs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse mounter arguments '%': %s", params[mounterArgsKey], err)
+	}
 	b := &bucket{
 		Name:          volumeID,
 		Mounter:       mounter,
 		CapacityBytes: capacityBytes,
 		FSPath:        fsPrefix,
+		MounterArgs:   mounterArgs,
 	}
 	if err := s3.setBucket(b); err != nil {
 		return nil, fmt.Errorf("Error setting bucket metadata: %v", err)
